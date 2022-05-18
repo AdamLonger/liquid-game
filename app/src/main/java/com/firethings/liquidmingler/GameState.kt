@@ -60,7 +60,8 @@ data class GameState(
 
 object GameLogic {
     fun toggleBucket(state: GameState, bucketId: Int): GameState {
-        val selected = if (state.selected?.id == bucketId) {
+        val bucket = state.buckets.firstOrNull { it.id == bucketId }
+        val selected = if (state.selected?.id == bucketId || (state.selected == null && bucket?.isEmpty != false)) {
             null
         } else {
             state.buckets.first { it.id == bucketId }
@@ -135,6 +136,7 @@ data class Bucket(
     var content: List<Liquid>
 ) {
     val isFull get() = content.size == size
+    val isEmpty get() = content.size == 0
     val isMonochrome get() = content.distinctBy { it.id }.size == 1
     val isComplete get() = (isMonochrome && isFull) || content.isEmpty()
     val availableSpace get() = size - content.size
