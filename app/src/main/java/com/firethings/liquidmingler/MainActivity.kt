@@ -75,8 +75,8 @@ class MainActivity : ComponentActivity() {
 val startScene = Scene(
     buckets = listOf(
         Bucket(0, 3, listOf()),
-        Bucket(1, 3, listOf(Liquid.Red)),
-        Bucket(2, 3, listOf(Liquid.Red, Liquid.Red, Liquid.Blue)),
+        Bucket(1, 3, listOf()),
+        Bucket(2, 3, listOf(Liquid.Red, Liquid.Blue)),
     )
 )
 
@@ -301,7 +301,6 @@ fun BucketComponent(
                 animatedHeightPx = liquidLevel * heightPx,
                 bendAngle = abs(bendLevel) * BucketRotateExtent,
                 bendRight = bendRight,
-                size = size,
                 content = content
             )
         }
@@ -315,13 +314,12 @@ fun DrawScope.drawLiquids(
     animatedHeightPx: Float,
     bendAngle: Float,
     bendRight: Boolean = true,
-    size: Int,
     content: List<Color>,
 ) {
     content.forEachIndexed { index, color ->
         val shape = calculateLiquidShape(
             width = widthPx,
-            height = min((size - index) * liquidHeightPx, animatedHeightPx),
+            height = min((content.size - index) * liquidHeightPx, animatedHeightPx),
             angle = bendAngle
         )
 
@@ -397,7 +395,7 @@ fun calculateLiquidShape(
         )
     } else {
         //The liquid reaches both side of the container at this angle, the shape is a trapeze
-        val sideDifference = tanAlpha * height
+        val sideDifference = tanAlpha * width
 
         return LiquidShape.Trapeze(
             shorterSize = trapezeBase,
