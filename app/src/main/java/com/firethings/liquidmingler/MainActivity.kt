@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
-import com.firethings.liquidmingler.ui.game.Game
-import com.firethings.liquidmingler.ui.game.startScene
 import com.firethings.liquidmingler.ui.theme.LiquidMinglerTheme
 
 class MainActivity : ComponentActivity() {

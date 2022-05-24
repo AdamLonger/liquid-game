@@ -4,10 +4,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
+import com.firethings.liquidmingler.state.BucketUpdateType
 
-fun Modifier.bucketZModifier(active: Boolean, bucketSize: Int): Modifier =
-    this.zIndex(if (active) (bucketSize + 1) * 4f else 0f)
-
+fun Modifier.bucketZModifier(
+    updateType: BucketUpdateType,
+    bucketSize: Int,
+    bringForeground: Boolean = false
+): Modifier = zIndex(
+    when (updateType) {
+        is BucketUpdateType.Pour -> (bucketSize + 1) * 4f
+        BucketUpdateType.Fill -> (bucketSize + 1) * if (bringForeground) 1000f else 0f
+        BucketUpdateType.None -> 0f
+    }
+)
 
 fun Modifier.applyLayoutData(
     hasFinishedAnimation: Boolean,
