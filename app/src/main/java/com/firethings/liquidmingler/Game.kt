@@ -1,5 +1,6 @@
 package com.firethings.liquidmingler
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.LocalConfiguration
@@ -50,7 +52,7 @@ val startScene = Scene(
         Bucket(1, 3, listOf(Liquid.Red, Liquid.Blue)),
         Bucket(2, 3, listOf()),
         Bucket(3, 3, listOf()),
-        Bucket(4, 3, listOf(Liquid.Red, Liquid.Blue)),
+        Bucket(4, 3, listOf()),
         Bucket(5, 3, listOf()),
         Bucket(6, 3, listOf()),
         Bucket(7, 3, listOf()),
