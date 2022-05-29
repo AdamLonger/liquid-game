@@ -15,29 +15,31 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 
 @Composable
-fun <V: BucketVisuals> AnimatedStreamComponent(
-    update: BucketVisualsWithLayout<V>
+fun <V : BucketVisuals> AnimatedStreamComponent(
+    withLayout: BucketVisualsWithLayout<V>
 ) {
     val animationProgress by animateFloatAsState(
-        targetValue = update.current.content.size.toFloat(),
+        targetValue = withLayout.current.content.size.toFloat(),
         animationSpec = tween(durationMillis = TransitionDuration)
     )
     val hasFinishedAnimation = floor(animationProgress) == animationProgress
 
-    if (!hasFinishedAnimation && update.current.content.size < update.previous.content.size) {
+    if (!hasFinishedAnimation && withLayout.current.content.size < withLayout.previous.content.size) {
         Canvas(
             modifier = Modifier
                 .width(BucketPourWidth)
-                .height(update.visuals.size.height)
-                .offset(if (update.bendMultiplier < 0) 0.dp else update.visuals.size.width + BucketPourWidth)
+                .height(withLayout.visuals.size.height)
+                .applyStreamLayout(withLayout)
+
         ) {
-            val heightPx = (BucketPourOffset + update.visuals.size.height).toPx()
+            val heightPx = (BucketPourOffset + withLayout.visuals.size.height).toPx()
             val streamHeightPx = BucketPourOffset.toPx()
             val streamWidthPx = BucketPourWidth.toPx()
             val path = Path()
 
+            val pourMultiplier = (withLayout.layoutData as? BucketUpdateLayoutData.Pour)?.pourMultiplier ?: 0f
             path.apply {
-                if (update.bendMultiplier < 0) {
+                if (pourMultiplier < 0) {
                     moveTo(streamWidthPx, 0f)
                     lineTo(streamWidthPx, heightPx)
                     lineTo(0f, heightPx)
@@ -53,7 +55,7 @@ fun <V: BucketVisuals> AnimatedStreamComponent(
 
             }
 
-            drawPath(path, update.previous.topPortion.firstOrNull()?.color() ?: Color.Transparent)
+            drawPath(path, withLayout.previous.topPortion.firstOrNull()?.color() ?: Color.Transparent)
         }
     }
 }

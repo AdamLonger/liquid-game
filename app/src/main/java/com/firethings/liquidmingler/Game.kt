@@ -18,13 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.firethings.liquidmingler.state.Bucket
-import com.firethings.liquidmingler.state.Bucket.*
 import com.firethings.liquidmingler.state.GameState
 import com.firethings.liquidmingler.state.Liquid
 import com.firethings.liquidmingler.state.Scene
@@ -33,28 +31,20 @@ import com.firethings.liquidmingler.ui.game.AnimatedBucketBackgroundComponent
 import com.firethings.liquidmingler.ui.game.AnimatedBucketForegroundComponent
 import com.firethings.liquidmingler.ui.game.AnimatedLiquidComponent
 import com.firethings.liquidmingler.ui.game.AnimatedStreamComponent
-import com.firethings.liquidmingler.ui.game.BucketHorizontalSpacing
+import com.firethings.liquidmingler.ui.game.BucketLayer
 import com.firethings.liquidmingler.ui.game.BucketPourOffset
 import com.firethings.liquidmingler.ui.game.BucketPourWidth
-import com.firethings.liquidmingler.ui.game.BucketUpdateLayoutData
 import com.firethings.liquidmingler.ui.game.BucketVisualsWithLayout
-import com.firethings.liquidmingler.ui.game.BucketVerticalSpacing
 import com.firethings.liquidmingler.ui.game.BucketVisuals
+import com.firethings.liquidmingler.ui.game.applyStreamLayout
 import com.firethings.liquidmingler.ui.game.bucketZModifier
+import com.firethings.liquidmingler.ui.game.layoutBucket
 import kotlinx.coroutines.launch
-import kotlin.math.floor
 
 val startScene = Scene(
     buckets = listOf(
         Bucket(0, 3, listOf()),
-        Bucket(1, 3, listOf(Liquid.Red, Liquid.Blue)),
-        Bucket(2, 3, listOf()),
-        Bucket(3, 3, listOf()),
-        Bucket(4, 3, listOf(Liquid.Red, Liquid.Red, Liquid.Red)),
-        Bucket(5, 3, listOf()),
-        Bucket(6, 3, listOf()),
-        Bucket(7, 3, listOf()),
-        Bucket(8, 3, listOf()),
+        Bucket(1, 3, listOf(Liquid.Red, Liquid.Red, Liquid.Red)),
     )
 )
 
@@ -107,7 +97,8 @@ fun Game(scene: Scene) {
                 state.updates.map { BucketVisuals.Flask(it) }.forEachIndexed { index, visuals ->
                     val withLayout = BucketVisualsWithLayout.wrap(visuals, layoutCoordinates,
                         with(LocalDensity.current) { screenWidth.toPx() },
-                        with(LocalDensity.current) { BucketPourWidth.toPx() }
+                        with(LocalDensity.current) { BucketPourWidth.toPx() },
+                        with(LocalDensity.current) { BucketPourOffset.toPx() }
                     )
 
                     //Background
@@ -115,8 +106,8 @@ fun Game(scene: Scene) {
                         modifier = Modifier
                             .layoutBucket(visuals, index, itemPerRow)
                             .bucketZModifier(
-                                visuals.updateType,
-                                state.buckets.size
+                                BucketLayer.BACKGROUND,
+                                visuals.updateType
                             )
                     ) {
                         AnimatedBucketBackgroundComponent(
@@ -130,28 +121,18 @@ fun Game(scene: Scene) {
                         modifier = Modifier
                             .layoutBucket(visuals, index, itemPerRow)
                             .bucketZModifier(
-                                visuals.updateType,
-                                state.buckets.size
+                                BucketLayer.STREAM,
+                                visuals.updateType
                             )
-                            .let { mod ->
-                                (withLayout.layoutData as? BucketUpdateLayoutData.Pour)?.let { data ->
-                                    mod.graphicsLayer {
-                                        translationX = data.translationX +
-                                                (-BucketPourWidth.toPx() - visuals.size.width.toPx()) / 2f
-                                        translationY = data.translationY - BucketPourOffset.toPx()
-                                    }
-                                } ?: mod
-                            }
-                    ) { AnimatedStreamComponent(update = withLayout) }
+                    ) { AnimatedStreamComponent(withLayout = withLayout) }
 
                     //Liquids
                     Box(
                         modifier = Modifier
                             .layoutBucket(visuals, index, itemPerRow)
                             .bucketZModifier(
-                                visuals.updateType,
-                                state.buckets.size,
-                                true
+                                BucketLayer.LIQUID,
+                                visuals.updateType
                             )
                     ) {
                         AnimatedLiquidComponent(withLayout = withLayout)
@@ -162,9 +143,8 @@ fun Game(scene: Scene) {
                         modifier = Modifier
                             .layoutBucket(visuals, index, itemPerRow)
                             .bucketZModifier(
-                                visuals.updateType,
-                                state.buckets.size,
-                                true
+                                BucketLayer.FOREGROUND,
+                                visuals.updateType
                             )
                     ) {
                         AnimatedBucketForegroundComponent(
@@ -182,13 +162,3 @@ fun Game(scene: Scene) {
     }
 }
 
-
-fun Modifier.layoutBucket(
-    visuals: BucketVisuals,
-    bucketIndex: Int,
-    itemPerRow: Int,
-): Modifier {
-    val x = (visuals.size.width + BucketHorizontalSpacing) * (bucketIndex % itemPerRow)
-    val y = (visuals.size.height + BucketVerticalSpacing) * floor(bucketIndex / itemPerRow.toFloat())
-    return padding(start = x, top = y)
-}

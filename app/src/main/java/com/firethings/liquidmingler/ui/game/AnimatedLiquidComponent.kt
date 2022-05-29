@@ -39,33 +39,29 @@ fun <V : BucketVisuals> AnimatedLiquidComponent(
     onClick
 ) { content, bendLevel, liquidLevel ->
     LiquidComponent(
-        visuals = withLayout.visuals,
-        volume = withLayout.current.volume,
+        withLayout = withLayout,
         content = content,
         bendLevel = bendLevel,
-        bendRight = withLayout.bendMultiplier > 0,
         liquidLevel = liquidLevel,
     )
 }
 
 @Composable
-fun LiquidComponent(
-    visuals: BucketVisuals,
-    volume: Int,
+fun <V: BucketVisuals> LiquidComponent(
+    withLayout: BucketVisualsWithLayout<V>,
     content: List<Color>,
     bendLevel: Float = 0f,
-    bendRight: Boolean = true,
     liquidLevel: Float = 1f,
 ) {
-    val widthPx = with(LocalDensity.current) { visuals.size.width.toPx() }
-    val heightPx = with(LocalDensity.current) { visuals.size.height.toPx() }
+    val widthPx = with(LocalDensity.current) {withLayout.visuals.size.width.toPx() }
+    val heightPx = with(LocalDensity.current) { withLayout.visuals.size.height.toPx() }
     val copyBitmap = remember { ImageBitmap(widthPx.toInt(), heightPx.toInt()) }
     val copyCanvas = remember { androidx.compose.ui.graphics.Canvas(copyBitmap) }
 
     val image = ImageVector.vectorResource(id = R.drawable.img_liquid)
     val painter = rememberVectorPainter(
-        defaultWidth = visuals.size.width,
-        defaultHeight = visuals.size.height,
+        defaultWidth = withLayout.visuals.size.width,
+        defaultHeight = withLayout.visuals.size.height,
         viewportWidth = image.viewportWidth,
         viewportHeight = image.viewportHeight,
         name = image.name,
@@ -74,8 +70,8 @@ fun LiquidComponent(
 
     Canvas(
         modifier = Modifier
-            .width(visuals.size.width)
-            .height(visuals.size.height)
+            .width(withLayout.visuals.size.width)
+            .height(withLayout.visuals.size.height)
             .alpha(0.99f)
     ) {
         copyCanvas.drawRect(0f, 0f, widthPx, heightPx, paint = Paint().apply {
@@ -90,10 +86,10 @@ fun LiquidComponent(
             copyCanvas.drawLiquid(
                 widthPx = widthPx,
                 heightPx = heightPx,
-                liquidHeightPx = heightPx / volume.toFloat(),
+                liquidHeightPx = heightPx / withLayout.visuals.update.current.volume.toFloat(),
                 animatedHeightPx = liquidLevel * heightPx,
                 bendAngle = abs(bendLevel) * BucketRotateExtent,
-                bendRight = bendRight,
+                pourDirection = (withLayout.layoutData as? BucketUpdateLayoutData.Pour)?.pourDirection,
                 content = content
             )
 
@@ -117,7 +113,7 @@ private fun androidx.compose.ui.graphics.Canvas.drawLiquid(
     liquidHeightPx: Float,
     animatedHeightPx: Float,
     bendAngle: Float,
-    bendRight: Boolean = true,
+    pourDirection: PourDirection?,
     content: List<Color>,
 ) {
     content.forEachIndexed { index, color ->
@@ -131,8 +127,10 @@ private fun androidx.compose.ui.graphics.Canvas.drawLiquid(
 
         when (shape) {
             is LiquidShape.Trapeze -> {
-                val leftSide = if (bendRight) shape.shorterSize else shape.longerSide
-                val rightSide = if (bendRight) shape.longerSide else shape.shorterSize
+                val (leftSide, rightSide) = when(pourDirection){
+                    PourDirection.LEFT, null -> shape.shorterSize to shape.longerSide
+                    PourDirection.RIGHT-> shape.longerSide to shape.shorterSize
+                }
 
                 path.moveTo(0f, heightPx - leftSide)
                 path.lineTo(0f, heightPx)
@@ -141,16 +139,19 @@ private fun androidx.compose.ui.graphics.Canvas.drawLiquid(
                 path.close()
             }
             is LiquidShape.Triangle -> {
-                if (bendRight) {
-                    path.moveTo(widthPx - shape.adjacentSize, heightPx)
-                    path.lineTo(widthPx, heightPx)
-                    path.lineTo(widthPx, heightPx - shape.oppositeSize)
-                    path.close()
-                } else {
-                    path.moveTo(shape.adjacentSize, heightPx)
-                    path.lineTo(0f, heightPx)
-                    path.lineTo(0f, heightPx - shape.oppositeSize)
-                    path.close()
+                when (pourDirection){
+                    PourDirection.LEFT, null -> {
+                        path.moveTo(widthPx - shape.adjacentSize, heightPx)
+                        path.lineTo(widthPx, heightPx)
+                        path.lineTo(widthPx, heightPx - shape.oppositeSize)
+                        path.close()
+                    }
+                    PourDirection.RIGHT -> {
+                        path.moveTo(shape.adjacentSize, heightPx)
+                        path.lineTo(0f, heightPx)
+                        path.lineTo(0f, heightPx - shape.oppositeSize)
+                        path.close()
+                    }
                 }
             }
         }

@@ -35,14 +35,14 @@ fun <V : BucketVisuals> AnimatedGameComponent(
             .content.map { it.color() }
 
     val bendLevel =
-        if (hasFinishedAnimation || withLayout.previous.content.size <= withLayout.current.content.size) 0f
-        else (1f - animationProgress / withLayout.current.volume.toFloat()) * withLayout.bendMultiplier
+        if (hasFinishedAnimation || withLayout.layoutData !is BucketUpdateLayoutData.Pour) 0f
+        else (1f - animationProgress / withLayout.current.volume.toFloat()) * withLayout.layoutData.pourMultiplier
     val liquidLevel = animationProgress / withLayout.current.volume.toFloat()
 
     Box(modifier = Modifier
         .wrapContentSize()
         .onGloballyPositioned(onLayout)
-        .applyLayoutData(
+        .applyBucketLayout(
             hasFinishedAnimation, withLayout.layoutData, bendLevel,
             bendCenterOffsetPercent = withLayout.visuals.bendCenterOffsetPercent
         )
