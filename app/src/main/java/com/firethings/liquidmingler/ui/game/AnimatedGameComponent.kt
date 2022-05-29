@@ -15,8 +15,8 @@ import com.firethings.liquidmingler.state.Bucket
 import kotlin.math.floor
 
 @Composable
-fun AnimatedGameComponent(
-    update: BucketUpdateWithLayout,
+fun <V : BucketVisuals> AnimatedGameComponent(
+    withLayout: BucketVisualsWithLayout<V>,
     onLayout: (LayoutCoordinates) -> Unit = {},
     onClick: (bucket: Bucket) -> Unit = {},
     component: @Composable (
@@ -26,24 +26,27 @@ fun AnimatedGameComponent(
     ) -> Unit
 ) {
     val animationProgress by animateFloatAsState(
-        targetValue = update.current.content.size.toFloat(),
+        targetValue = withLayout.current.content.size.toFloat(),
         animationSpec = tween(durationMillis = TransitionDuration)
     )
     val hasFinishedAnimation = floor(animationProgress) == animationProgress
     val animatingContent =
-        (if (update.previous.content.size >= update.current.content.size) update.previous else update.current)
+        (if (withLayout.previous.content.size >= withLayout.current.content.size) withLayout.previous else withLayout.current)
             .content.map { it.color() }
 
     val bendLevel =
-        if (hasFinishedAnimation || update.previous.content.size <= update.current.content.size) 0f
-        else (1f - animationProgress / update.current.size.toFloat()) * update.bendMultiplier
-    val liquidLevel = animationProgress / update.current.size.toFloat()
+        if (hasFinishedAnimation || withLayout.previous.content.size <= withLayout.current.content.size) 0f
+        else (1f - animationProgress / withLayout.current.volume.toFloat()) * withLayout.bendMultiplier
+    val liquidLevel = animationProgress / withLayout.current.volume.toFloat()
 
     Box(modifier = Modifier
         .wrapContentSize()
         .onGloballyPositioned(onLayout)
-        .applyLayoutData(hasFinishedAnimation, update.layoutData, bendLevel)
-        .clickable { if (hasFinishedAnimation) onClick.invoke(update.current) }
+        .applyLayoutData(
+            hasFinishedAnimation, withLayout.layoutData, bendLevel,
+            bendCenterOffsetPercent = withLayout.visuals.bendCenterOffsetPercent
+        )
+        .clickable { if (hasFinishedAnimation) onClick.invoke(withLayout.current) }
     ) {
         component(
             content = animatingContent,

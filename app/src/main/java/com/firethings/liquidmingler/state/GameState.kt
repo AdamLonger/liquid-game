@@ -66,7 +66,7 @@ object GameLogic {
     private fun canPut(to: Bucket, list: List<Liquid>) = when {
         list.isEmpty() -> false
         list.distinctBy { it.id }.size != 1 -> false
-        list.size + to.content.size > to.size -> false
+        list.size + to.content.size > to.volume -> false
         to.content.isNotEmpty() && list.first().id != to.content.first().id -> false
         else -> true
     }

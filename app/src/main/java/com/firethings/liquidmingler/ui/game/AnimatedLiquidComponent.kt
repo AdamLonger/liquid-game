@@ -1,14 +1,7 @@
 package com.firethings.liquidmingler.ui.game
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.BitmapShader
-import android.graphics.Canvas
-import android.graphics.ColorSpace
-import android.view.View
 import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -18,77 +11,61 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.isSupported
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.vector.RenderVectorGroup
-import androidx.compose.ui.graphics.vector.VectorNode
-import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.viewinterop.AndroidView
 import com.firethings.liquidmingler.R
 import com.firethings.liquidmingler.state.Bucket
 import kotlin.math.abs
 import kotlin.math.min
 
 @Composable
-fun AnimatedLiquidComponent(
-    width: Dp,
-    height: Dp,
-    update: BucketUpdateWithLayout,
+fun <V : BucketVisuals> AnimatedLiquidComponent(
+    withLayout: BucketVisualsWithLayout<V>,
     onLayout: (LayoutCoordinates) -> Unit = {},
     onClick: (bucket: Bucket) -> Unit = {}
 ) = AnimatedGameComponent(
-    update,
+    withLayout,
     onLayout,
     onClick
 ) { content, bendLevel, liquidLevel ->
     LiquidComponent(
-        width = width,
-        height = height,
-        size = update.current.size,
+        visuals = withLayout.visuals,
+        volume = withLayout.current.volume,
         content = content,
         bendLevel = bendLevel,
-        bendRight = update.bendMultiplier > 0,
+        bendRight = withLayout.bendMultiplier > 0,
         liquidLevel = liquidLevel,
     )
 }
 
 @Composable
 fun LiquidComponent(
-    width: Dp,
-    height: Dp,
-    size: Int,
+    visuals: BucketVisuals,
+    volume: Int,
     content: List<Color>,
     bendLevel: Float = 0f,
     bendRight: Boolean = true,
     liquidLevel: Float = 1f,
 ) {
-    val widthPx = with(LocalDensity.current) { width.toPx() }
-    val heightPx = with(LocalDensity.current) { height.toPx() }
+    val widthPx = with(LocalDensity.current) { visuals.size.width.toPx() }
+    val heightPx = with(LocalDensity.current) { visuals.size.height.toPx() }
     val copyBitmap = remember { ImageBitmap(widthPx.toInt(), heightPx.toInt()) }
     val copyCanvas = remember { androidx.compose.ui.graphics.Canvas(copyBitmap) }
 
     val image = ImageVector.vectorResource(id = R.drawable.img_liquid)
-    val painter = rememberVectorPainter(defaultWidth = width,
-        defaultHeight = height,
+    val painter = rememberVectorPainter(
+        defaultWidth = visuals.size.width,
+        defaultHeight = visuals.size.height,
         viewportWidth = image.viewportWidth,
         viewportHeight = image.viewportHeight,
         name = image.name,
@@ -97,8 +74,8 @@ fun LiquidComponent(
 
     Canvas(
         modifier = Modifier
-            .width(width)
-            .height(height)
+            .width(visuals.size.width)
+            .height(visuals.size.height)
             .alpha(0.99f)
     ) {
         copyCanvas.drawRect(0f, 0f, widthPx, heightPx, paint = Paint().apply {
@@ -113,7 +90,7 @@ fun LiquidComponent(
             copyCanvas.drawLiquid(
                 widthPx = widthPx,
                 heightPx = heightPx,
-                liquidHeightPx = heightPx / size.toFloat(),
+                liquidHeightPx = heightPx / volume.toFloat(),
                 animatedHeightPx = liquidLevel * heightPx,
                 bendAngle = abs(bendLevel) * BucketRotateExtent,
                 bendRight = bendRight,

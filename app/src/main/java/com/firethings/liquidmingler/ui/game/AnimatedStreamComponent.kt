@@ -9,15 +9,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 
 @Composable
-fun AnimatedStreamComponent(
-    update: BucketUpdateWithLayout
+fun <V: BucketVisuals> AnimatedStreamComponent(
+    update: BucketVisualsWithLayout<V>
 ) {
     val animationProgress by animateFloatAsState(
         targetValue = update.current.content.size.toFloat(),
@@ -29,10 +28,10 @@ fun AnimatedStreamComponent(
         Canvas(
             modifier = Modifier
                 .width(BucketPourWidth)
-                .height(BucketHeight)
-                .offset(if (update.bendMultiplier < 0) 0.dp else BucketWidth + BucketPourWidth)
+                .height(update.visuals.size.height)
+                .offset(if (update.bendMultiplier < 0) 0.dp else update.visuals.size.width + BucketPourWidth)
         ) {
-            val heightPx = (BucketPourOffset + BucketHeight).toPx()
+            val heightPx = (BucketPourOffset + update.visuals.size.height).toPx()
             val streamHeightPx = BucketPourOffset.toPx()
             val streamWidthPx = BucketPourWidth.toPx()
             val path = Path()

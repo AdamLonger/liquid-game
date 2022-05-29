@@ -2,8 +2,6 @@ package com.firethings.liquidmingler.ui.game
 
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.unit.Dp
-import com.firethings.liquidmingler.state.BucketUpdate
 import com.firethings.liquidmingler.state.BucketUpdateType
 
 sealed class BucketUpdateLayoutData {
@@ -27,31 +25,32 @@ sealed class BucketUpdateLayoutData {
     ) : BucketUpdateLayoutData()
 }
 
-data class BucketUpdateWithLayout(
-    val update: BucketUpdate,
+data class BucketVisualsWithLayout<out V : BucketVisuals>(
+    val visuals: V,
     val layoutData: BucketUpdateLayoutData
 ) {
-    val bucketId get() = update.bucketId
-    val current get() = update.current
-    val previous get() = update.previous
-    val updateType get() = update.updateType
+    val bucketId get() = visuals.update.bucketId
+    val current get() = visuals.update.current
+    val previous get() = visuals.update.previous
+    val updateType get() = visuals.update.updateType
     val bendMultiplier get() = layoutData.bendMultiplier
-    val isSelected get() = update.isSelected
+    val isSelected get() = visuals.update.isSelected
 
     companion object {
-        fun wrap(
-            update: BucketUpdate,
+        fun <V : BucketVisuals> wrap(
+            visuals: V,
             layoutMap: Map<Int, LayoutCoordinates>,
-            screenWidthPx: Float
-        ): BucketUpdateWithLayout {
-            return when (update.updateType) {
+            screenWidthPx: Float,
+            pourWidthPx: Float
+        ): BucketVisualsWithLayout<V> {
+            return when (val updateType = visuals.updateType) {
                 BucketUpdateType.Fill ->
-                    BucketUpdateWithLayout(update, BucketUpdateLayoutData.Fill(isSelected = update.isSelected))
+                    BucketVisualsWithLayout(visuals, BucketUpdateLayoutData.Fill(isSelected = visuals.isSelected))
                 BucketUpdateType.None ->
-                    BucketUpdateWithLayout(update, BucketUpdateLayoutData.None(isSelected = update.isSelected))
+                    BucketVisualsWithLayout(visuals, BucketUpdateLayoutData.None(isSelected = visuals.isSelected))
                 is BucketUpdateType.Pour -> {
-                    val fromPos = layoutMap.getValue(update.bucketId)
-                    val toPos = layoutMap.getValue(update.updateType.destinationId)
+                    val fromPos = layoutMap.getValue(visuals.bucketId)
+                    val toPos = layoutMap.getValue(updateType.destinationId)
                     val fromBounds = fromPos.boundsInRoot()
                     val toBounds = toPos.boundsInRoot()
 
@@ -62,13 +61,14 @@ data class BucketUpdateWithLayout(
                         else -> 1f
                     }
 
-                    val translationX = toBounds.left - fromBounds.left - bendMultiplier * fromPos.size.width
+                    val translationX = toBounds.left - fromBounds.left - bendMultiplier * (
+                            fromBounds.size.width * visuals.bendCenterOffsetPercent + pourWidthPx / 2f)
                     val translationY = toBounds.top - fromBounds.top
 
-                    BucketUpdateWithLayout(
-                        update, BucketUpdateLayoutData.Pour(
+                    BucketVisualsWithLayout(
+                        visuals, BucketUpdateLayoutData.Pour(
                             bendMultiplier = bendMultiplier,
-                            isSelected = update.isSelected,
+                            isSelected = visuals.isSelected,
                             translationX = translationX,
                             translationY = translationY
                         )

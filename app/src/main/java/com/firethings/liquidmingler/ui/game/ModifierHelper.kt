@@ -1,5 +1,6 @@
 package com.firethings.liquidmingler.ui.game
 
+import androidx.annotation.FloatRange
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -21,7 +22,9 @@ fun Modifier.bucketZModifier(
 fun Modifier.applyLayoutData(
     hasFinishedAnimation: Boolean,
     data: BucketUpdateLayoutData,
-    bendLevel: Float
+    bendLevel: Float,
+    @FloatRange(from = 0.0, to = 0.5)
+    bendCenterOffsetPercent: Float = 0.5f,
 ) = when (data) {
     is BucketUpdateLayoutData.Fill, is BucketUpdateLayoutData.None -> graphicsLayer {
         transformOrigin = TransformOrigin(
@@ -35,7 +38,7 @@ fun Modifier.applyLayoutData(
         translationX = if (!hasFinishedAnimation) data.translationX else 0f
         translationY = if (!hasFinishedAnimation) data.translationY - BucketPourOffset.toPx() else 0f
         transformOrigin = TransformOrigin(
-            pivotFractionX = if (data.bendMultiplier < 0) 0f else 1f,
+            pivotFractionX = 0.5f + bendCenterOffsetPercent * if (data.bendMultiplier < 0) -1f else 1f,
             pivotFractionY = 0f,
         )
         rotationZ = if (!hasFinishedAnimation) bendLevel * BucketRotateExtent else 0f
