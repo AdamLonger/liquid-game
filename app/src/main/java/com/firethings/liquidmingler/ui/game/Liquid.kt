@@ -8,6 +8,7 @@ import kotlin.math.tan
 fun Liquid.color() = when (this) {
     Liquid.Blue -> Color.Blue
     Liquid.Red -> Color.Red
+    Liquid.Green -> Color.Green
 }
 
 /**

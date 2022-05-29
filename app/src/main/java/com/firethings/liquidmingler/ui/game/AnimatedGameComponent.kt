@@ -1,5 +1,6 @@
 package com.firethings.liquidmingler.ui.game
 
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import com.firethings.liquidmingler.state.Bucket
+import kotlin.math.abs
 import kotlin.math.floor
 
 @Composable
@@ -26,12 +28,14 @@ fun <V : BucketVisuals> AnimatedGameComponent(
     ) -> Unit
 ) {
     val animationProgress by animateFloatAsState(
-        targetValue = withLayout.current.content.size.toFloat(),
-        animationSpec = tween(durationMillis = TransitionDuration)
+        targetValue = withLayout.current.size.toFloat(),
+        animationSpec = tween(
+            durationMillis = abs(withLayout.current.size - withLayout.previous.size) * VolumeTweenDuration
+        )
     )
     val hasFinishedAnimation = floor(animationProgress) == animationProgress
     val animatingContent =
-        (if (withLayout.previous.content.size >= withLayout.current.content.size) withLayout.previous else withLayout.current)
+        (if (withLayout.previous.size >= withLayout.current.content.size) withLayout.previous else withLayout.current)
             .content.map { it.color() }
 
     val bendLevel =

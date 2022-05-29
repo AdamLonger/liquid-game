@@ -58,7 +58,7 @@ fun <V: BucketVisuals> LiquidComponent(
     val copyBitmap = remember { ImageBitmap(widthPx.toInt(), heightPx.toInt()) }
     val copyCanvas = remember { androidx.compose.ui.graphics.Canvas(copyBitmap) }
 
-    val image = ImageVector.vectorResource(id = R.drawable.img_liquid)
+    val image = ImageVector.vectorResource(id = withLayout.visuals.liquidRes)
     val painter = rememberVectorPainter(
         defaultWidth = withLayout.visuals.size.width,
         defaultHeight = withLayout.visuals.size.height,

@@ -44,7 +44,11 @@ import kotlinx.coroutines.launch
 val startScene = Scene(
     buckets = listOf(
         Bucket(0, 3, listOf()),
-        Bucket(1, 3, listOf(Liquid.Red, Liquid.Red, Liquid.Red)),
+        Bucket(1, 3, listOf(Liquid.Blue, Liquid.Red, Liquid.Red)),
+        Bucket(2, 3, listOf()),
+        Bucket(3, 3, listOf(Liquid.Blue, Liquid.Red, Liquid.Blue)),
+        Bucket(4, 3, listOf()),
+        Bucket(5, 3, listOf(Liquid.Green,Liquid.Green,Liquid.Green)),
     )
 )
 

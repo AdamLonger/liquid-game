@@ -10,4 +10,8 @@ sealed class Liquid {
     object Blue : Liquid() {
         override val id: Int = 1
     }
+
+    object Green : Liquid() {
+        override val id: Int = 3
+    }
 }

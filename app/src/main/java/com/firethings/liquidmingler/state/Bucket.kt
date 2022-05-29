@@ -10,6 +10,7 @@ data class Bucket(
     val isMonochrome get() = content.distinctBy { it.id }.size == 1
     val isComplete get() = (isMonochrome && isFull) || content.isEmpty()
     val availableSpace get() = volume - content.size
+    val size get() = content.size
     val topPortion
         get() = content.indexOfFirst { it.id != (content.firstOrNull()?.id ?: -1) }.let { index ->
             return@let when {

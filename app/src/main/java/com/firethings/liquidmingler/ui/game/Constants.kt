@@ -7,4 +7,4 @@ val BucketPourWidth = 8.dp
 val BucketHorizontalSpacing = 30.dp
 val BucketVerticalSpacing = 30.dp
 const val BucketRotateExtent = 90f
-const val TransitionDuration = 800
+const val VolumeTweenDuration = 1000

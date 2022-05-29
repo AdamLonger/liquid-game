@@ -22,11 +22,11 @@ sealed class BucketVisuals {
     data class Flask(
         override val update: BucketUpdate
     ) : BucketVisuals() {
-        override val size: DpSize = DpSize(54.dp, 62.dp)
-        override val bendCenterOffsetPercent: Float = 0.1f
+        override val size: DpSize = DpSize(46.25.dp, 70.5.dp)
+        override val bendCenterOffsetPercent: Float = 0.18f
 
-        override val backRes: Int = R.drawable.img_bottle_back
-        override val liquidRes: Int = R.drawable.img_liquid
-        override val frontRes: Int = R.drawable.img_bottle_front
+        override val backRes: Int = R.drawable.img_bottle_flask_background
+        override val liquidRes: Int = R.drawable.img_bottle_flask_liquid
+        override val frontRes: Int = R.drawable.img_bottle_flask_foreground
     }
 }

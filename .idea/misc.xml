@@ -4,6 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/img_bottle_back.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/img_bottle_flask_background.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/img_bottle_flask_foreground.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/img_bottle_flask_liquid.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/img_bottle_front.xml" value="0.1" />
       </map>
     </option>

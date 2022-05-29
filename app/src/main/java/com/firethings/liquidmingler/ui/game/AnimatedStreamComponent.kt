@@ -1,17 +1,17 @@
 package com.firethings.liquidmingler.ui.game
 
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import kotlin.math.floor
 
 @Composable
@@ -19,12 +19,14 @@ fun <V : BucketVisuals> AnimatedStreamComponent(
     withLayout: BucketVisualsWithLayout<V>
 ) {
     val animationProgress by animateFloatAsState(
-        targetValue = withLayout.current.content.size.toFloat(),
-        animationSpec = tween(durationMillis = TransitionDuration)
+        targetValue = withLayout.current.size.toFloat(),
+        animationSpec = tween(
+            durationMillis = abs(withLayout.current.size - withLayout.previous.size) * VolumeTweenDuration
+        )
     )
     val hasFinishedAnimation = floor(animationProgress) == animationProgress
 
-    if (!hasFinishedAnimation && withLayout.current.content.size < withLayout.previous.content.size) {
+    if (!hasFinishedAnimation && withLayout.current.size < withLayout.previous.size) {
         Canvas(
             modifier = Modifier
                 .width(BucketPourWidth)
@@ -55,7 +57,10 @@ fun <V : BucketVisuals> AnimatedStreamComponent(
 
             }
 
-            drawPath(path, withLayout.previous.topPortion.firstOrNull()?.color() ?: Color.Transparent)
+            drawPath(
+                path,
+                withLayout.previous.topPortion.firstOrNull()?.color()?.copy(alpha = 0.5f) ?: Color.Transparent
+            )
         }
     }
 }
